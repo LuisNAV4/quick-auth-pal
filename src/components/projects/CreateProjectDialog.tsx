@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,9 @@ const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: 
     descripcion: "",
     fecha_inicio: "",
     fecha_fin_estimada: "",
+    fecha_fin: "",
+    presupuesto: "",
+    responsable: "",
     cliente: "",
     miembros_seleccionados: [] as string[],
   });
@@ -56,6 +60,9 @@ const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: 
       descripcion: newProject.descripcion,
       fechaInicio: newProject.fecha_inicio,
       fechaFinEstimada: newProject.fecha_fin_estimada,
+      fechaFin: newProject.fecha_fin,
+      presupuesto: newProject.presupuesto ? parseFloat(newProject.presupuesto) : null,
+      responsable: newProject.responsable || null,
       cliente: newProject.cliente,
       miembros: newProject.miembros_seleccionados.map(id => ({ usuario_id: id }))
     };
@@ -66,6 +73,9 @@ const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: 
       descripcion: "",
       fecha_inicio: "",
       fecha_fin_estimada: "",
+      fecha_fin: "",
+      presupuesto: "",
+      responsable: "",
       cliente: "",
       miembros_seleccionados: [],
     });
@@ -143,6 +153,50 @@ const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: 
                 required
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="endDateActual">Fecha fin real</Label>
+              <Input
+                id="endDateActual"
+                type="date"
+                value={newProject.fecha_fin}
+                onChange={(e) => setNewProject({...newProject, fecha_fin: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="budget">Presupuesto</Label>
+              <Input
+                id="budget"
+                type="number"
+                min="0"
+                step="0.01"
+                value={newProject.presupuesto}
+                onChange={(e) => setNewProject({...newProject, presupuesto: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="responsable">Responsable del proyecto</Label>
+            <Select
+              value={newProject.responsable}
+              onValueChange={(value) => setNewProject({...newProject, responsable: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un responsable" />
+              </SelectTrigger>
+              <SelectContent>
+                {miembros.map((miembro) => (
+                  <SelectItem key={miembro.usuario_id} value={miembro.usuario_id}>
+                    {miembro.nombre_completo}
+                    {miembro.puesto && ` (${miembro.puesto})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-3">

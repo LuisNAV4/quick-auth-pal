@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Calendar, Building2, Upload, FileText } from "lucide-react";
+import { Calendar, Building2, Upload, FileText, Settings } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRef } from "react";
+import TaskReportsDialog from "./TaskReportsDialog";
 
 interface SubTask {
   id: string;
@@ -43,9 +45,11 @@ interface TaskCardProps {
   onStatusChange: (taskId: string, newStatus: string) => void;
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
+  onUpdateTask?: (taskId: string, updates: any) => Promise<void>;
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  userRole?: string;
 }
 
 const TaskCard = ({ 
@@ -56,11 +60,14 @@ const TaskCard = ({
   onStatusChange, 
   onSubTaskToggle,
   onFileUpload,
+  onUpdateTask,
   getPriorityColor, 
   getProgressColor,
-  canEditTask
+  canEditTask,
+  userRole
 }: TaskCardProps) => {
   const { user } = useAuth();
+  const [showReports, setShowReports] = useState(false);
   const canEdit = canEditTask(task);
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
@@ -126,6 +133,20 @@ const TaskCard = ({
           </div>
           
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            {/* Botón de gestión de informes */}
+            {canEdit && onUpdateTask && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReports(true)}
+                className="h-8 px-3"
+                title="Gestionar tarea"
+              >
+                <Settings size={14} className="mr-1" />
+                Gestionar
+              </Button>
+            )}
+            
             {task.assigned && (
               <div className="flex items-center gap-2 min-w-0">
                 <Avatar className="h-6 w-6 shrink-0">
@@ -264,6 +285,17 @@ const TaskCard = ({
           </div>
         )}
       </div>
+      
+      {/* Dialog de gestión de tareas */}
+      {onUpdateTask && (
+        <TaskReportsDialog
+          open={showReports}
+          onOpenChange={setShowReports}
+          task={task}
+          onUpdateTask={onUpdateTask}
+          userRole={userRole}
+        />
+      )}
     </Card>
   );
 };

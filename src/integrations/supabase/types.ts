@@ -543,6 +543,16 @@ export type Database = {
               p_descripcion?: string
               p_fecha_inicio?: string
               p_fecha_fin_estimada?: string
+              p_fecha_fin?: string
+              p_presupuesto?: number
+              p_responsable_id?: string
+              p_miembros_ids?: string[]
+            }
+          | {
+              p_nombre: string
+              p_descripcion?: string
+              p_fecha_inicio?: string
+              p_fecha_fin_estimada?: string
               p_presupuesto?: number
               p_responsable_id?: string
             }

@@ -41,7 +41,7 @@ interface ProjectDetailViewProps {
   projectName: string;
   tasks: Task[];
   onBack: () => void;
-  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   onStatusChange: (taskId: string, newStatus: string) => void;
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
@@ -50,6 +50,7 @@ interface ProjectDetailViewProps {
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  userRole?: string;
 }
 
 const ProjectDetailView = ({
@@ -64,7 +65,8 @@ const ProjectDetailView = ({
   getTaskStatus,
   getPriorityColor,
   getProgressColor,
-  canEditTask
+  canEditTask,
+  userRole
 }: ProjectDetailViewProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -394,11 +396,13 @@ const ProjectDetailView = ({
             onStatusChange={onStatusChange}
             onSubTaskToggle={onSubTaskToggle}
             onFileUpload={onFileUpload}
+            onUpdateTask={onUpdateTask}
             getTaskProgress={getTaskProgress}
             getTaskStatus={getTaskStatus}
             getPriorityColor={getPriorityColor}
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
+            userRole={userRole}
           />
         </TabsContent>
 

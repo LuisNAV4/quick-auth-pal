@@ -195,7 +195,13 @@ const Projects = () => {
           projectName={selectedProject}
           tasks={projectTasks}
           onBack={() => setSelectedProject(null)}
-          onUpdateTask={(taskId: string, updates: any) => handleTaskStatusChange(taskId, updates.status)}
+          onUpdateTask={async (taskId: string, updates: any) => {
+            try {
+              await actualizarTarea(taskId, updates);
+            } catch (error) {
+              console.error('Error actualizando tarea:', error);
+            }
+          }}
           onStatusChange={handleTaskStatusChange}
           onSubTaskToggle={handleSubTaskToggle}
           onFileUpload={handleFileUpload}
@@ -204,6 +210,7 @@ const Projects = () => {
           getPriorityColor={getPriorityColor}
           getProgressColor={getProgressColor}
           canEditTask={canEditTask}
+          userRole={profile?.puesto}
         />
       </AppLayout>
     );

@@ -35,11 +35,13 @@ interface TaskListProps {
   onStatusChange: (taskId: string, newStatus: string) => void;
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
+  onUpdateTask?: (taskId: string, updates: any) => Promise<void>;
   getTaskProgress: (task: Task) => number;
   getTaskStatus: (task: Task) => { color: string; label: string };
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  userRole?: string;
 }
 
 const TaskList = ({
@@ -49,11 +51,13 @@ const TaskList = ({
   onStatusChange,
   onSubTaskToggle,
   onFileUpload,
+  onUpdateTask,
   getTaskProgress,
   getTaskStatus,
   getPriorityColor,
   getProgressColor,
-  canEditTask
+  canEditTask,
+  userRole
 }: TaskListProps) => {
   if (tasks.length === 0) {
     return (
@@ -86,9 +90,11 @@ const TaskList = ({
             onStatusChange={onStatusChange}
             onSubTaskToggle={onSubTaskToggle}
             onFileUpload={onFileUpload}
+            onUpdateTask={onUpdateTask}
             getPriorityColor={getPriorityColor}
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
+            userRole={userRole}
           />
         );
       })}

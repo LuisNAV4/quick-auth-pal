@@ -248,6 +248,7 @@ export const useSupabaseData = () => {
           p_descripcion: descripcion,
           p_fecha_inicio: projectData.fechaInicio || null,
           p_fecha_fin_estimada: projectData.fechaFinEstimada || null,
+          p_fecha_fin: projectData.fechaFin || null,
           p_presupuesto: projectData.presupuesto || null,
           p_responsable_id: projectData.responsable || null,
           p_miembros_ids: miembrosIds

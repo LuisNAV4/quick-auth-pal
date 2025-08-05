@@ -54,12 +54,15 @@ const CreateTaskDialog = ({ open, onOpenChange, onCreateTask, proyectos, miembro
       } else {
         setMiembrosProyecto([]);
       }
-      // Limpiar asignación cuando cambia el proyecto
-      setNewTask(prev => ({ ...prev, assigned: "" }));
     };
 
     cargarMiembrosDelProyecto();
   }, [newTask.project, proyectos, obtenerMiembrosProyecto]);
+
+  // Limpiar asignación cuando cambia el proyecto (separado del useEffect anterior)
+  useEffect(() => {
+    setNewTask(prev => ({ ...prev, assigned: "" }));
+  }, [newTask.project]);
 
   const handleSubmit = () => {
     if (!newTask.title?.trim() || !newTask.assigned || !newTask.dueDate || !newTask.project) {

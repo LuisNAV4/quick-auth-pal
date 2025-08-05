@@ -270,62 +270,11 @@ export const useSupabaseData = () => {
     if (!user) throw new Error('Usuario no autenticado');
 
     try {
-      // Buscar el proyecto por nombre para obtener el ID
-      const proyecto = proyectos.find(p => p.nombre === taskData.project);
-      if (!proyecto) {
-        throw new Error('Proyecto no encontrado');
-      }
-
-      // Buscar el usuario asignado por nombre para obtener el ID
-      const miembros = await obtenerMiembrosProyecto(proyecto.id);
-      const usuarioAsignado = miembros.find(m => m.nombre_completo === taskData.assigned);
-      
-      if (!usuarioAsignado) {
-        throw new Error('Usuario asignado no encontrado en el proyecto');
-      }
-
-      // Verificar que el usuario sea miembro del proyecto
-      const { data: miembro } = await supabase
-        .from('miembros_proyecto')
-        .select('*')
-        .eq('proyecto_id', proyecto.id)
-        .eq('usuario_id', user.id)
-        .single();
-
-      // Si no es miembro, agregarlo automáticamente
-      if (!miembro) {
-        const { error: memberError } = await supabase
-          .from('miembros_proyecto')
-          .insert({
-            proyecto_id: proyecto.id,
-            usuario_id: user.id,
-            rol_proyecto: 'miembro',
-            puede_editar: true,
-            puede_eliminar: false
-          });
-
-        if (memberError) {
-          console.warn('Error agregando usuario como miembro:', memberError);
-        }
-      }
-
-      const tareaCompleta = {
-        titulo: taskData.title,
-        descripcion: taskData.description || '',
-        proyecto_id: proyecto.id,
-        asignado_a: usuarioAsignado.usuario_id,
-        creado_por: user.id,
-        fecha_limite: taskData.dueDate,
-        prioridad: taskData.priority || 'medium',
-        estado: 'planificacion' as const,
-        progreso: 0,
-        orden_posicion: 0,
-        activa: true
-      };
+      console.log('Datos recibidos para crear tarea:', taskData);
 
       const { data, error } = await supabase
         .from('tareas')
-        .insert(tareaCompleta)
+        .insert(taskData)
         .select()
         .single();
 
@@ -333,9 +282,11 @@ export const useSupabaseData = () => {
         throw error;
       }
 
+      console.log('Tarea creada exitosamente:', data);
       await cargarTareas();
       return data;
     } catch (err: any) {
+      console.error('Error creando tarea:', err);
       setError(err.message);
       throw err;
     }

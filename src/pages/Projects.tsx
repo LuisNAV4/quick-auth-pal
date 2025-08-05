@@ -60,21 +60,34 @@ const Projects = () => {
 
   const handleCreateTask = async (taskData: any) => {
     try {
+      console.log('Datos de tarea recibidos en Projects:', taskData);
+      
+      // Buscar el proyecto por nombre
       const proyecto = proyectos?.find(p => p.nombre === taskData.project);
       if (!proyecto) {
-        throw new Error('Proyecto no encontrado');
+        throw new Error(`Proyecto "${taskData.project}" no encontrado`);
       }
 
+      // Buscar el usuario asignado por nombre
+      const usuarioAsignado = perfiles?.find(p => p.nombre_completo === taskData.assigned);
+      if (!usuarioAsignado) {
+        throw new Error(`Usuario "${taskData.assigned}" no encontrado`);
+      }
+
+      // Preparar datos en el formato correcto para Supabase
       const supabaseTaskData = {
         titulo: taskData.title,
         descripcion: taskData.description || '',
         proyecto_id: proyecto.id,
-        asignado_a: taskData.assigned ? perfiles?.find(p => p.nombre_completo === taskData.assigned)?.usuario_id : null,
+        asignado_a: usuarioAsignado.usuario_id,
         fecha_limite: taskData.dueDate ? new Date(taskData.dueDate).toISOString().split('T')[0] : null,
         fecha_inicio: new Date().toISOString().split('T')[0],
         prioridad: taskData.priority,
         estado: 'planificacion' as const,
+        creado_por: user?.id
       };
+
+      console.log('Datos preparados para Supabase:', supabaseTaskData);
 
       await crearTarea(supabaseTaskData);
       setShowCreateTask(false);
@@ -83,6 +96,7 @@ const Projects = () => {
         description: "La tarea se ha creado exitosamente",
       });
     } catch (error: any) {
+      console.error('Error en handleCreateTask:', error);
       toast({
         title: "Error",
         description: "No se pudo crear la tarea: " + error.message,

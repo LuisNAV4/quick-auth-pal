@@ -39,17 +39,17 @@ const Calendar = () => {
   const fetchNotes = async () => {
     try {
       const { data, error } = await supabase
-        .from('comentarios')
+        .from('notas_personales')
         .select('*')
         .order('fecha_creacion', { ascending: false });
 
       if (error) throw error;
 
-      const mappedNotes = data?.map(comment => ({
-        id: comment.id,
-        date: new Date(comment.fecha_creacion),
-        title: comment.contenido.split('\n')[0] || 'Sin título',
-        content: comment.contenido,
+      const mappedNotes = data?.map(nota => ({
+        id: nota.id,
+        date: new Date(nota.fecha_nota),
+        title: nota.titulo,
+        content: nota.contenido || '',
       })) || [];
 
       setNotes(mappedNotes);
@@ -65,11 +65,19 @@ const Calendar = () => {
     }
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Usuario no autenticado");
+        return;
+      }
+
       const { error } = await supabase
-        .from('comentarios')
+        .from('notas_personales')
         .insert({
-          contenido: `${newNote.title}\n${newNote.content || ''}`,
-          autor_id: (await supabase.auth.getUser()).data.user?.id
+          titulo: newNote.title,
+          contenido: newNote.content || '',
+          fecha_nota: date.toISOString().split('T')[0],
+          usuario_id: user.id
         });
 
       if (error) throw error;
@@ -93,9 +101,10 @@ const Calendar = () => {
     
     try {
       const { error } = await supabase
-        .from('comentarios')
+        .from('notas_personales')
         .update({
-          contenido: `${currentNote.title}\n${currentNote.content || ''}`
+          titulo: currentNote.title,
+          contenido: currentNote.content || ''
         })
         .eq('id', currentNote.id);
 
@@ -112,7 +121,7 @@ const Calendar = () => {
   const handleDeleteNote = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('comentarios')
+        .from('notas_personales')
         .delete()
         .eq('id', id);
 

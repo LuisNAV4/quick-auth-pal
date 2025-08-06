@@ -218,6 +218,36 @@ export type Database = {
           },
         ]
       }
+      notas_personales: {
+        Row: {
+          contenido: string | null
+          fecha_actualizacion: string
+          fecha_creacion: string
+          fecha_nota: string
+          id: string
+          titulo: string
+          usuario_id: string
+        }
+        Insert: {
+          contenido?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fecha_nota?: string
+          id?: string
+          titulo: string
+          usuario_id: string
+        }
+        Update: {
+          contenido?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fecha_nota?: string
+          id?: string
+          titulo?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       notificaciones: {
         Row: {
           fecha_creacion: string

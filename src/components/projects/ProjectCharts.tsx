@@ -10,6 +10,7 @@ interface Task {
   title: string;
   description: string;
   assigned?: string;
+  assignedName?: string;
   assigneeAvatar?: string;
   assigneeRole?: string;
   dueDate?: string;
@@ -36,11 +37,12 @@ const ProjectCharts: React.FC<ProjectChartsProps> = ({ tasks }) => {
     { name: "Completado", value: statusCounts["done"] || 0, color: "#86EFAC" },
   ];
   
-  // Calculate project distribution by team member
+  // Calculate project distribution by team member - use assignedName instead of UUID
   const memberTaskCounts: Record<string, number> = {};
   tasks.forEach(task => {
-    if (task.assigned) {
-      memberTaskCounts[task.assigned] = (memberTaskCounts[task.assigned] || 0) + 1;
+    if (task.assignedName) {
+      const displayName = task.assignedName || 'Sin asignar';
+      memberTaskCounts[displayName] = (memberTaskCounts[displayName] || 0) + 1;
     }
   });
   

@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
-import ProjectGrid from "../components/projects/ProjectGrid";
-import ProjectDetailView from "../components/projects/ProjectDetailView";
+import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateProjectDialog from "../components/projects/CreateProjectDialog";
 import CreateTaskDialog from "../components/projects/CreateTaskDialog";
 import { toast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Projects = () => {
   const { user, profile } = useAuth();
@@ -20,9 +20,9 @@ const Projects = () => {
     actualizarEstadoTarea 
   } = useSupabaseData();
   
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [activeView, setActiveView] = useState("kanban");
 
   // Map Supabase data to component interfaces
   const mappedTasks = tasks?.map(task => ({
@@ -181,40 +181,7 @@ const Projects = () => {
     return task.assigned === currentUser || profile?.puesto === 'Director';
   };
 
-  // Filtrar tareas por proyecto seleccionado
-  const projectTasks = selectedProject 
-    ? mappedTasks.filter(task => task.project === selectedProject)
-    : mappedTasks;
-
   const proyectosActivos = proyectos?.filter(p => p.activo) || [];
-
-  if (selectedProject) {
-    return (
-      <AppLayout title={`Proyecto: ${selectedProject}`}>
-        <ProjectDetailView
-          projectName={selectedProject}
-          tasks={projectTasks}
-          onBack={() => setSelectedProject(null)}
-          onUpdateTask={async (taskId: string, updates: any) => {
-            try {
-              await actualizarTarea(taskId, updates);
-            } catch (error) {
-              console.error('Error actualizando tarea:', error);
-            }
-          }}
-          onStatusChange={handleTaskStatusChange}
-          onSubTaskToggle={handleSubTaskToggle}
-          onFileUpload={handleFileUpload}
-          getTaskProgress={getTaskProgress}
-          getTaskStatus={getTaskStatus}
-          getPriorityColor={getPriorityColor}
-          getProgressColor={getProgressColor}
-          canEditTask={canEditTask}
-          userRole={profile?.puesto}
-        />
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout title="Gestión de Proyectos">
@@ -246,11 +213,68 @@ const Projects = () => {
           </div>
         </div>
 
-        {/* Vista de proyectos */}
-        <ProjectGrid 
-          tasks={mappedTasks} 
-          onProjectSelect={setSelectedProject}
-        />
+        {/* Vista de tareas con metodología Kanban */}
+        <Tabs value={activeView} onValueChange={setActiveView}>
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="kanban">Vista Kanban</TabsTrigger>
+            <TabsTrigger value="list">Vista Lista</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="kanban" className="mt-6">
+            <KanbanBoard 
+              tasks={mappedTasks}
+              onStatusChange={handleTaskStatusChange}
+              getTaskProgress={getTaskProgress}
+              getPriorityColor={getPriorityColor}
+              canEditTask={canEditTask}
+            />
+          </TabsContent>
+          
+          <TabsContent value="list" className="mt-6">
+            <div className="space-y-4">
+              {mappedTasks.map((task) => {
+                const progress = getTaskProgress(task);
+                const status = getTaskStatus(task);
+                
+                return (
+                  <div key={task.id} className="p-4 border rounded-lg bg-card">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">{task.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            {task.project}
+                          </span>
+                          {task.assigned && (
+                            <span className="text-xs text-muted-foreground">
+                              Asignado a: {task.assigned}
+                            </span>
+                          )}
+                          {task.dueDate && (
+                            <span className="text-xs text-muted-foreground">
+                              Vence: {new Date(task.dueDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          task.status === 'done' ? 'bg-green-100 text-green-800' :
+                          task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                          'bg-orange-100 text-orange-800'
+                        }`}>
+                          {task.status === 'done' ? 'Completada' :
+                           task.status === 'in_progress' ? 'En Progreso' : 'Pendiente'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

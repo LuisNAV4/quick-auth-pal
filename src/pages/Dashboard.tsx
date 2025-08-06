@@ -1,32 +1,41 @@
 
 import AppLayout from "../components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Clock, TrendingUp, Loader2, Calendar, Users, BarChart3 } from "lucide-react";
+import { CheckCircle2, Clock, TrendingUp, Loader2, Calendar, Users, BarChart3, ChevronDown, ChevronUp, User } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
 import ProjectStats from "../components/projects/ProjectStats";
 import ProjectCharts from "../components/projects/ProjectCharts";
 import { useSupabaseData } from "../hooks/useSupabaseData";
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
-  const { tareas, proyectos, obtenerEstadisticas, loading } = useSupabaseData();
+  const { tareas, proyectos, perfiles, obtenerEstadisticas, loading } = useSupabaseData();
   const [activeTab, setActiveTab] = useState("overview");
+  const [pendingTasksOpen, setPendingTasksOpen] = useState(true);
+  const [completedTasksOpen, setCompletedTasksOpen] = useState(true);
   
   // Convertir tareas de Supabase al formato legacy para compatibilidad
   const convertirTareas = () => {
-    return tareas.map(tarea => ({
-      id: tarea.id,
-      title: tarea.titulo,
-      description: tarea.descripcion || '',
-      assigned: tarea.asignado_a,
-      dueDate: tarea.fecha_limite,
-      status: tarea.estado === 'planificacion' ? 'pending' as const : 
-              tarea.estado === 'en_progreso' ? 'in_progress' as const :
-              tarea.estado === 'completado' ? 'done' as const : 'pending' as const,
-      project: proyectos.find(p => p.id === tarea.proyecto_id)?.nombre || 'Proyecto desconocido'
-    }));
+    return tareas.map(tarea => {
+      const perfil = perfiles.find(p => p.usuario_id === tarea.asignado_a);
+      const proyecto = proyectos.find(p => p.id === tarea.proyecto_id);
+      return {
+        id: tarea.id,
+        title: tarea.titulo,
+        description: tarea.descripcion || '',
+        assigned: tarea.asignado_a,
+        assignedName: perfil?.nombre_completo || 'Sin asignar',
+        dueDate: tarea.fecha_limite,
+        status: tarea.estado === 'planificacion' ? 'pending' as const : 
+                tarea.estado === 'en_progreso' ? 'in_progress' as const :
+                tarea.estado === 'completado' ? 'done' as const : 'pending' as const,
+        project: proyecto?.nombre || 'Proyecto desconocido'
+      };
+    });
   };
 
   const tasks = convertirTareas();
@@ -39,11 +48,11 @@ const Dashboard = () => {
   const completedTasks = tasks.filter(task => task.status === "done");
   
   // Filtrar por usuario si es necesario
-  const userPendingTasks = profile?.nombre_completo 
-    ? pendingTasks.filter(task => task.assigned === profile.nombre_completo)
+  const userPendingTasks = profile?.usuario_id 
+    ? pendingTasks.filter(task => task.assigned === profile.usuario_id)
     : pendingTasks;
-  const userCompletedTasks = profile?.nombre_completo
-    ? completedTasks.filter(task => task.assigned === profile.nombre_completo) 
+  const userCompletedTasks = profile?.usuario_id
+    ? completedTasks.filter(task => task.assigned === profile.usuario_id) 
     : completedTasks;
   
   // Calcular estadísticas
@@ -164,99 +173,139 @@ const Dashboard = () => {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <Card className="border-none shadow-sm bg-white/80 backdrop-blur transition-all duration-300 hover:shadow-md">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Tareas pendientes</CardTitle>
-                        <CardDescription>Tus tareas y actividades actuales</CardDescription>
-                      </div>
-                      <div className="p-2 bg-amber-50 rounded-full">
-                        <Clock size={18} className="text-amber-600" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {userPendingTasks.length > 0 ? (
-                        userPendingTasks.slice(0, 5).map((task) => (
-                           <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 last:border-0 last:pb-0 group hover:bg-gray-50/50 p-2 rounded-md transition-colors gap-2">
-                             <div className="flex-1 min-w-0">
-                               <p className="font-medium group-hover:text-blue-700 transition-colors text-sm sm:text-base truncate">{task.title}</p>
-                               <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-1 flex-wrap gap-1">
-                                 <div className="flex items-center">
-                                   <Calendar size={12} className="mr-1" />
-                                   <span>{formatDueDate(task.dueDate)}</span>
-                                 </div>
-                                 <span className="hidden sm:inline-block mx-2">•</span>
-                                 <span className="truncate max-w-[100px] sm:max-w-[120px]">{task.project}</span>
-                               </div>
-                             </div>
-                             <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center self-start sm:self-center ${getStatusColor(task.status)}`}>
-                               {getStatusIcon(task.status)}
-                               <span className="ml-1 hidden sm:inline">{getStatusText(task.status)}</span>
-                             </div>
-                           </div>
-                        ))
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <div className="bg-amber-50 p-3 rounded-full mb-3">
-                            <CheckCircle2 size={24} className="text-amber-500" />
-                          </div>
-                          <p className="text-gray-500 text-center">No hay tareas pendientes</p>
-                          <p className="text-gray-400 text-sm text-center">¡Todo al día!</p>
+                  <Collapsible open={pendingTasksOpen} onOpenChange={setPendingTasksOpen}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Tareas pendientes</CardTitle>
+                          <CardDescription>Tus tareas y actividades actuales</CardDescription>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-amber-50 rounded-full">
+                            <Clock size={18} className="text-amber-600" />
+                          </div>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-1 h-auto">
+                              {pendingTasksOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CollapsibleContent>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {userPendingTasks.length > 0 ? (
+                            userPendingTasks.slice(0, 5).map((task) => (
+                               <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 last:border-0 last:pb-0 group hover:bg-gray-50/50 p-2 rounded-md transition-colors gap-2">
+                                 <div className="flex-1 min-w-0">
+                                   <p className="font-medium group-hover:text-blue-700 transition-colors text-sm sm:text-base truncate">{task.title}</p>
+                                   <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-1 flex-wrap gap-1">
+                                     <div className="flex items-center">
+                                       <Calendar size={12} className="mr-1" />
+                                       <span>{formatDueDate(task.dueDate)}</span>
+                                     </div>
+                                     <span className="hidden sm:inline-block mx-2">•</span>
+                                     <span className="truncate max-w-[100px] sm:max-w-[120px]">{task.project}</span>
+                                     {task.assignedName && (
+                                       <>
+                                         <span className="hidden sm:inline-block mx-2">•</span>
+                                         <div className="flex items-center gap-1">
+                                           <User size={12} />
+                                           <span className="truncate">{task.assignedName}</span>
+                                         </div>
+                                       </>
+                                     )}
+                                   </div>
+                                 </div>
+                                 <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center self-start sm:self-center ${getStatusColor(task.status)}`}>
+                                   {getStatusIcon(task.status)}
+                                   <span className="ml-1 hidden sm:inline">{getStatusText(task.status)}</span>
+                                 </div>
+                               </div>
+                            ))
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8">
+                              <div className="bg-amber-50 p-3 rounded-full mb-3">
+                                <CheckCircle2 size={24} className="text-amber-500" />
+                              </div>
+                              <p className="text-gray-500 text-center">No hay tareas pendientes</p>
+                              <p className="text-gray-400 text-sm text-center">¡Todo al día!</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </Card>
                 
                 <Card className="border-none shadow-sm bg-white/80 backdrop-blur transition-all duration-300 hover:shadow-md">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Tareas completadas</CardTitle>
-                        <CardDescription>Tareas finalizadas recientemente</CardDescription>
-                      </div>
-                      <div className="p-2 bg-emerald-50 rounded-full">
-                        <CheckCircle2 size={18} className="text-emerald-600" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {userCompletedTasks.length > 0 ? (
-                        userCompletedTasks.slice(0, 5).map((task) => (
-                           <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 last:border-0 last:pb-0 group hover:bg-gray-50/50 p-2 rounded-md transition-colors gap-2">
-                             <div className="flex-1 min-w-0">
-                               <p className="font-medium group-hover:text-emerald-700 transition-colors text-sm sm:text-base truncate">{task.title}</p>
-                               <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-1 flex-wrap gap-1">
-                                 <div className="flex items-center">
-                                   <Calendar size={12} className="mr-1" />
-                                   <span>{formatDueDate(task.dueDate)}</span>
-                                 </div>
-                                 <span className="hidden sm:inline-block mx-2">•</span>
-                                 <span className="truncate max-w-[100px] sm:max-w-[120px]">{task.project}</span>
-                               </div>
-                             </div>
-                             <div className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 self-start sm:self-center">
-                               <div className="flex items-center">
-                                 <CheckCircle2 size={12} className="mr-1" />
-                                 <span className="hidden sm:inline">Completado</span>
-                               </div>
-                             </div>
-                           </div>
-                        ))
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <div className="bg-emerald-50 p-3 rounded-full mb-3">
-                            <Clock size={24} className="text-emerald-500" />
-                          </div>
-                          <p className="text-gray-500 text-center">No hay tareas completadas</p>
-                          <p className="text-gray-400 text-sm text-center">¡Completa alguna tarea para verla aquí!</p>
+                  <Collapsible open={completedTasksOpen} onOpenChange={setCompletedTasksOpen}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Tareas completadas</CardTitle>
+                          <CardDescription>Tareas finalizadas recientemente</CardDescription>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-emerald-50 rounded-full">
+                            <CheckCircle2 size={18} className="text-emerald-600" />
+                          </div>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-1 h-auto">
+                              {completedTasksOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CollapsibleContent>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {userCompletedTasks.length > 0 ? (
+                            userCompletedTasks.slice(0, 5).map((task) => (
+                               <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 last:border-0 last:pb-0 group hover:bg-gray-50/50 p-2 rounded-md transition-colors gap-2">
+                                 <div className="flex-1 min-w-0">
+                                   <p className="font-medium group-hover:text-emerald-700 transition-colors text-sm sm:text-base truncate">{task.title}</p>
+                                   <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-1 flex-wrap gap-1">
+                                     <div className="flex items-center">
+                                       <Calendar size={12} className="mr-1" />
+                                       <span>{formatDueDate(task.dueDate)}</span>
+                                     </div>
+                                     <span className="hidden sm:inline-block mx-2">•</span>
+                                     <span className="truncate max-w-[100px] sm:max-w-[120px]">{task.project}</span>
+                                     {task.assignedName && (
+                                       <>
+                                         <span className="hidden sm:inline-block mx-2">•</span>
+                                         <div className="flex items-center gap-1">
+                                           <User size={12} />
+                                           <span className="truncate">{task.assignedName}</span>
+                                         </div>
+                                       </>
+                                     )}
+                                   </div>
+                                 </div>
+                                 <div className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 self-start sm:self-center">
+                                   <div className="flex items-center">
+                                     <CheckCircle2 size={12} className="mr-1" />
+                                     <span className="hidden sm:inline">Completado</span>
+                                   </div>
+                                 </div>
+                               </div>
+                            ))
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8">
+                              <div className="bg-emerald-50 p-3 rounded-full mb-3">
+                                <Clock size={24} className="text-emerald-500" />
+                              </div>
+                              <p className="text-gray-500 text-center">No hay tareas completadas</p>
+                              <p className="text-gray-400 text-sm text-center">¡Completa alguna tarea para verla aquí!</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </Card>
               </div>
             </TabsContent>

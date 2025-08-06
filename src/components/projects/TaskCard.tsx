@@ -133,19 +133,6 @@ const TaskCard = ({
           </div>
           
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            {/* Botón de gestión de informes */}
-            {canEdit && onUpdateTask && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowReports(true)}
-                className="h-8 px-3"
-                title="Gestionar tarea"
-              >
-                <Settings size={14} className="mr-1" />
-                Gestionar
-              </Button>
-            )}
             
             {task.assigned && (
               <div className="flex items-center gap-2 min-w-0">

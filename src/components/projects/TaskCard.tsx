@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Calendar, Building2, Upload, FileText, Settings } from "lucide-react";
+import { Calendar, Building2, Upload, FileText, Settings, Image } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,6 +50,9 @@ interface TaskCardProps {
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
   userRole?: string;
+  projectId?: string;
+  isProjectDirector?: boolean;
+  onManageImages?: () => void;
 }
 
 const TaskCard = ({ 
@@ -64,7 +67,10 @@ const TaskCard = ({
   getPriorityColor, 
   getProgressColor,
   canEditTask,
-  userRole
+  userRole,
+  projectId,
+  isProjectDirector,
+  onManageImages
 }: TaskCardProps) => {
   const { user } = useAuth();
   const [showReports, setShowReports] = useState(false);
@@ -133,6 +139,19 @@ const TaskCard = ({
           </div>
           
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            {/* Botón de gestión de imágenes - solo para directores */}
+            {isProjectDirector && onManageImages && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onManageImages}
+                className="h-8 px-2 gap-1"
+                title="Gestionar imágenes del proyecto"
+              >
+                <Image size={14} />
+                {showDetails && <span className="text-xs">Imágenes</span>}
+              </Button>
+            )}
             
             {task.assigned && (
               <div className="flex items-center gap-2 min-w-0">

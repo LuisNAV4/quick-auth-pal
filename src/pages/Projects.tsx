@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseData } from "@/hooks/useSupabaseData";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateProjectDialog from "../components/projects/CreateProjectDialog";
 import CreateTaskDialog from "../components/projects/CreateTaskDialog";
@@ -10,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Projects = () => {
   const { user, profile } = useAuth();
+  const { canCreateProjects, canCreateTasks, userRole } = useUserPermissions();
   const { 
     tasks, 
     proyectos, 
@@ -178,7 +180,8 @@ const Projects = () => {
 
   const canEditTask = (task: any) => {
     const currentUser = profile?.nombre_completo || user?.email;
-    return task.assigned === currentUser || profile?.puesto === 'Director';
+    // Admins y gerentes pueden editar todas las tareas, miembros solo las asignadas a ellos
+    return userRole === 'admin' || userRole === 'gerente' || task.assigned === currentUser;
   };
 
   const proyectosActivos = proyectos?.filter(p => p.activo) || [];
@@ -196,20 +199,26 @@ const Projects = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <CreateTaskDialog
-              open={showCreateTask}
-              onOpenChange={setShowCreateTask}
-              onCreateTask={handleCreateTask}
-              proyectos={proyectosActivos}
-              miembros={perfiles || []}
-            />
+            {canCreateTasks && (
+              <CreateTaskDialog
+                open={showCreateTask}
+                onOpenChange={setShowCreateTask}
+                onCreateTask={handleCreateTask}
+                proyectos={proyectosActivos}
+                miembros={perfiles || []}
+                showTrigger={true}
+              />
+            )}
             
-            <CreateProjectDialog
-              open={showCreateProject}
-              onOpenChange={setShowCreateProject}
-              onCreateProject={handleCreateProject}
-              miembros={perfiles || []}
-            />
+            {canCreateProjects && (
+              <CreateProjectDialog
+                open={showCreateProject}
+                onOpenChange={setShowCreateProject}
+                onCreateProject={handleCreateProject}
+                miembros={perfiles || []}
+                showTrigger={true}
+              />
+            )}
           </div>
         </div>
 

@@ -3,7 +3,9 @@ import { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import ProjectGrid from "../components/projects/ProjectGrid";
 import ProjectDetailView from "../components/projects/ProjectDetailView";
+import ProjectImageManager from "../components/projects/ProjectImageManager";
 import { useSupabaseData } from "../hooks/useSupabaseData";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
 interface SubTask {
@@ -31,6 +33,7 @@ interface Task {
 }
 
 const TaskTrackingPage = () => {
+  const { user } = useAuth();
   const { 
     tasks, 
     proyectos, 
@@ -40,6 +43,7 @@ const TaskTrackingPage = () => {
   } = useSupabaseData();
   
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [showImageManager, setShowImageManager] = useState(false);
 
   // Map Supabase data to component interfaces
   const mappedTasks = tasks?.map(task => ({
@@ -134,12 +138,32 @@ const TaskTrackingPage = () => {
     return true;
   };
 
+  // Verificar si el usuario es director del proyecto seleccionado
+  const isProjectDirector = () => {
+    if (!selectedProject || !user) return false;
+    
+    const proyecto = proyectos?.find(p => p.nombre === selectedProject);
+    if (!proyecto) return false;
+    
+    // Es director si es creador, responsable, o tiene rol admin/manager
+    return proyecto.creado_por === user.id || 
+           proyecto.responsable_id === user.id;
+  };
+
+  const getSelectedProjectId = () => {
+    if (!selectedProject) return null;
+    const proyecto = proyectos?.find(p => p.nombre === selectedProject);
+    return proyecto?.id || null;
+  };
+
   // Filtrar tareas por proyecto seleccionado
   const projectTasks = selectedProject 
     ? mappedTasks.filter(task => task.project === selectedProject)
     : mappedTasks;
 
   if (selectedProject) {
+    const projectId = getSelectedProjectId();
+    
     return (
       <AppLayout title={`Proyecto: ${selectedProject}`}>
         <ProjectDetailView
@@ -161,7 +185,20 @@ const TaskTrackingPage = () => {
           getPriorityColor={getPriorityColor}
           getProgressColor={getProgressColor}
           canEditTask={canEditTask}
+          projectId={projectId}
+          isProjectDirector={isProjectDirector()}
+          onManageImages={() => setShowImageManager(true)}
         />
+        
+        {/* Manager de imágenes */}
+        {projectId && (
+          <ProjectImageManager
+            open={showImageManager}
+            onOpenChange={setShowImageManager}
+            projectId={projectId}
+            projectName={selectedProject}
+          />
+        )}
       </AppLayout>
     );
   }

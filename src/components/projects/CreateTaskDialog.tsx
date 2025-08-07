@@ -28,9 +28,10 @@ interface CreateTaskDialogProps {
   onCreateTask: (taskData: any) => void;
   proyectos: any[];
   miembros: any[];
+  showTrigger?: boolean;
 }
 
-const CreateTaskDialog = ({ open, onOpenChange, onCreateTask, proyectos, miembros }: CreateTaskDialogProps) => {
+const CreateTaskDialog = ({ open, onOpenChange, onCreateTask, proyectos, miembros, showTrigger = true }: CreateTaskDialogProps) => {
   const { obtenerMiembrosProyecto } = useSupabaseData();
   const [newTask, setNewTask] = useState({
     title: "",
@@ -86,12 +87,14 @@ const CreateTaskDialog = ({ open, onOpenChange, onCreateTask, proyectos, miembro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <CheckSquare className="h-4 w-4 mr-2" />
-          Nueva Tarea
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="outline" className="w-full sm:w-auto">
+            <CheckSquare className="h-4 w-4 mr-2" />
+            Nueva Tarea
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Crear Nueva Tarea</DialogTitle>

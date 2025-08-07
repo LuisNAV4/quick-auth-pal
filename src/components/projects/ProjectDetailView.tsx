@@ -51,6 +51,9 @@ interface ProjectDetailViewProps {
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
   userRole?: string;
+  projectId?: string | null;
+  isProjectDirector?: boolean;
+  onManageImages?: () => void;
 }
 
 const ProjectDetailView = ({
@@ -66,7 +69,10 @@ const ProjectDetailView = ({
   getPriorityColor,
   getProgressColor,
   canEditTask,
-  userRole
+  userRole,
+  projectId,
+  isProjectDirector,
+  onManageImages
 }: ProjectDetailViewProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -403,6 +409,9 @@ const ProjectDetailView = ({
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
             userRole={userRole}
+            projectId={projectId}
+            isProjectDirector={isProjectDirector}
+            onManageImages={onManageImages}
           />
         </TabsContent>
 

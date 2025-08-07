@@ -21,9 +21,10 @@ interface CreateProjectDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreateProject: (projectData: any) => void;
   miembros: any[];
+  showTrigger?: boolean;
 }
 
-const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: CreateProjectDialogProps) => {
+const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros, showTrigger = true }: CreateProjectDialogProps) => {
   const [newProject, setNewProject] = useState({
     nombre: "",
     descripcion: "",
@@ -86,12 +87,14 @@ const CreateProjectDialog = ({ open, onOpenChange, onCreateProject, miembros }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Proyecto
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Proyecto
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Crear Nuevo Proyecto</DialogTitle>

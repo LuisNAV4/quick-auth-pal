@@ -42,6 +42,9 @@ interface TaskListProps {
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
   userRole?: string;
+  projectId?: string | null;
+  isProjectDirector?: boolean;
+  onManageImages?: () => void;
 }
 
 const TaskList = ({
@@ -57,7 +60,10 @@ const TaskList = ({
   getPriorityColor,
   getProgressColor,
   canEditTask,
-  userRole
+  userRole,
+  projectId,
+  isProjectDirector,
+  onManageImages
 }: TaskListProps) => {
   if (tasks.length === 0) {
     return (
@@ -95,6 +101,9 @@ const TaskList = ({
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
             userRole={userRole}
+            projectId={projectId}
+            isProjectDirector={isProjectDirector}
+            onManageImages={onManageImages}
           />
         );
       })}

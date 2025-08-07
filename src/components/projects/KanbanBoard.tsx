@@ -3,10 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Clock, User, AlertTriangle, CheckCircle2, MoreHorizontal } from "lucide-react";
+import { Calendar, Clock, User, AlertTriangle, CheckCircle2, MoreHorizontal, Trash2 } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface SubTask {
   id: string;
@@ -37,18 +38,22 @@ interface KanbanBoardProps {
   tasks: Task[];
   onStatusChange: (taskId: string, newStatus: string) => void;
   onTaskEdit?: (task: Task) => void;
+  onTaskDelete?: (taskId: string) => void;
   getTaskProgress: (task: Task) => number;
   getPriorityColor: (priority?: string) => string;
   canEditTask: (task: Task) => boolean;
+  canDeleteTasks?: boolean;
 }
 
 const KanbanBoard = ({ 
   tasks, 
   onStatusChange, 
   onTaskEdit,
+  onTaskDelete,
   getTaskProgress, 
   getPriorityColor, 
-  canEditTask 
+  canEditTask,
+  canDeleteTasks = false
 }: KanbanBoardProps) => {
   const columns = [
     { 
@@ -150,6 +155,41 @@ const KanbanBoard = ({
                     <DropdownMenuItem onClick={() => onStatusChange(task.id, "done")}>
                       Marcar como Completada
                     </DropdownMenuItem>
+                    
+                    {canDeleteTasks && onTaskDelete && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem 
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onSelect={(e) => e.preventDefault()}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar tarea
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Eliminar tarea?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción eliminará permanentemente la tarea "{task.title}". 
+                                Esta acción no se puede deshacer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => onTaskDelete(task.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}

@@ -5,6 +5,7 @@ import ProjectGrid from "../components/projects/ProjectGrid";
 import ProjectDetailView from "../components/projects/ProjectDetailView";
 import ProjectImageManager from "../components/projects/ProjectImageManager";
 import { useSupabaseData } from "../hooks/useSupabaseData";
+import { useUserPermissions } from "../hooks/useUserPermissions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
@@ -34,12 +35,14 @@ interface Task {
 
 const TaskTrackingPage = () => {
   const { user } = useAuth();
+  const { canDeleteTasks } = useUserPermissions();
   const { 
     tasks, 
     proyectos, 
     perfiles, 
     actualizarTarea, 
-    actualizarEstadoTarea 
+    actualizarEstadoTarea,
+    eliminarTarea
   } = useSupabaseData();
   
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -138,6 +141,22 @@ const TaskTrackingPage = () => {
     return true;
   };
 
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      await eliminarTarea(taskId);
+      toast({
+        title: "Tarea eliminada",
+        description: "La tarea se ha eliminado exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la tarea",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Verificar si el usuario es director del proyecto seleccionado
   const isProjectDirector = () => {
     if (!selectedProject || !user) return false;
@@ -177,6 +196,7 @@ const TaskTrackingPage = () => {
               console.error('Error actualizando tarea:', error);
             }
           }}
+          onTaskDelete={handleTaskDelete}
           onStatusChange={handleTaskStatusChange}
           onSubTaskToggle={handleSubTaskToggle}
           onFileUpload={handleFileUpload}
@@ -185,6 +205,7 @@ const TaskTrackingPage = () => {
           getPriorityColor={getPriorityColor}
           getProgressColor={getProgressColor}
           canEditTask={canEditTask}
+          canDeleteTasks={canDeleteTasks}
           projectId={projectId}
           isProjectDirector={isProjectDirector()}
           onManageImages={() => setShowImageManager(true)}

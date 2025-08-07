@@ -42,6 +42,7 @@ interface ProjectDetailViewProps {
   tasks: Task[];
   onBack: () => void;
   onUpdateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  onTaskDelete?: (taskId: string) => void;
   onStatusChange: (taskId: string, newStatus: string) => void;
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
@@ -50,6 +51,7 @@ interface ProjectDetailViewProps {
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  canDeleteTasks?: boolean;
   userRole?: string;
   projectId?: string | null;
   isProjectDirector?: boolean;
@@ -61,6 +63,7 @@ const ProjectDetailView = ({
   tasks,
   onBack,
   onUpdateTask,
+  onTaskDelete,
   onStatusChange,
   onSubTaskToggle,
   onFileUpload,
@@ -69,6 +72,7 @@ const ProjectDetailView = ({
   getPriorityColor,
   getProgressColor,
   canEditTask,
+  canDeleteTasks = false,
   userRole,
   projectId,
   isProjectDirector,
@@ -403,11 +407,13 @@ const ProjectDetailView = ({
             onSubTaskToggle={onSubTaskToggle}
             onFileUpload={onFileUpload}
             onUpdateTask={onUpdateTask}
+            onTaskDelete={onTaskDelete}
             getTaskProgress={getTaskProgress}
             getTaskStatus={getTaskStatus}
             getPriorityColor={getPriorityColor}
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
+            canDeleteTasks={canDeleteTasks}
             userRole={userRole}
             projectId={projectId}
             isProjectDirector={isProjectDirector}

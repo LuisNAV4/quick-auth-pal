@@ -36,11 +36,13 @@ interface TaskListProps {
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
   onUpdateTask?: (taskId: string, updates: any) => Promise<void>;
+  onTaskDelete?: (taskId: string) => void;
   getTaskProgress: (task: Task) => number;
   getTaskStatus: (task: Task) => { color: string; label: string };
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  canDeleteTasks?: boolean;
   userRole?: string;
   projectId?: string | null;
   isProjectDirector?: boolean;
@@ -55,11 +57,13 @@ const TaskList = ({
   onSubTaskToggle,
   onFileUpload,
   onUpdateTask,
+  onTaskDelete,
   getTaskProgress,
   getTaskStatus,
   getPriorityColor,
   getProgressColor,
   canEditTask,
+  canDeleteTasks = false,
   userRole,
   projectId,
   isProjectDirector,
@@ -97,9 +101,11 @@ const TaskList = ({
             onSubTaskToggle={onSubTaskToggle}
             onFileUpload={onFileUpload}
             onUpdateTask={onUpdateTask}
+            onTaskDelete={onTaskDelete}
             getPriorityColor={getPriorityColor}
             getProgressColor={getProgressColor}
             canEditTask={canEditTask}
+            canDeleteTasks={canDeleteTasks}
             userRole={userRole}
             projectId={projectId}
             isProjectDirector={isProjectDirector}

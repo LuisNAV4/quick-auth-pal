@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Projects = () => {
   const { user, profile } = useAuth();
-  const { canCreateProjects, canCreateTasks, userRole } = useUserPermissions();
+  const { canCreateProjects, canCreateTasks, canDeleteTasks, userRole } = useUserPermissions();
   const { 
     tasks, 
     proyectos, 
@@ -19,7 +19,8 @@ const Projects = () => {
     crearTarea, 
     actualizarTarea, 
     crearProyecto,
-    actualizarEstadoTarea 
+    actualizarEstadoTarea,
+    eliminarTarea
   } = useSupabaseData();
   
   const [showCreateProject, setShowCreateProject] = useState(false);
@@ -184,6 +185,22 @@ const Projects = () => {
     return userRole === 'admin' || userRole === 'gerente' || task.assigned === currentUser;
   };
 
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      await eliminarTarea(taskId);
+      toast({
+        title: "Tarea eliminada",
+        description: "La tarea se ha eliminado exitosamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la tarea",
+        variant: "destructive"
+      });
+    }
+  };
+
   const proyectosActivos = proyectos?.filter(p => p.activo) || [];
 
   return (
@@ -233,9 +250,11 @@ const Projects = () => {
             <KanbanBoard 
               tasks={mappedTasks}
               onStatusChange={handleTaskStatusChange}
+              onTaskDelete={handleTaskDelete}
               getTaskProgress={getTaskProgress}
               getPriorityColor={getPriorityColor}
               canEditTask={canEditTask}
+              canDeleteTasks={canDeleteTasks}
             />
           </TabsContent>
           

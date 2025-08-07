@@ -5,12 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Calendar, Building2, Upload, FileText, Settings, Image } from "lucide-react";
+import { Calendar, Building2, Upload, FileText, Settings, Image, Trash2, MoreHorizontal } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRef } from "react";
 import TaskReportsDialog from "./TaskReportsDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface SubTask {
   id: string;
@@ -46,9 +48,11 @@ interface TaskCardProps {
   onSubTaskToggle: (taskId: string, subTaskId: string, completed: boolean) => void;
   onFileUpload?: (taskId: string, subTaskId: string, file: File) => void;
   onUpdateTask?: (taskId: string, updates: any) => Promise<void>;
+  onTaskDelete?: (taskId: string) => void;
   getPriorityColor: (priority?: string) => string;
   getProgressColor: (progress: number, task: Task) => string;
   canEditTask: (task: Task) => boolean;
+  canDeleteTasks?: boolean;
   userRole?: string;
   projectId?: string;
   isProjectDirector?: boolean;
@@ -64,9 +68,11 @@ const TaskCard = ({
   onSubTaskToggle,
   onFileUpload,
   onUpdateTask,
+  onTaskDelete,
   getPriorityColor, 
   getProgressColor,
   canEditTask,
+  canDeleteTasks = false,
   userRole,
   projectId,
   isProjectDirector,
@@ -151,6 +157,64 @@ const TaskCard = ({
                 <Image size={14} />
                 {showDetails && <span className="text-xs">Imágenes</span>}
               </Button>
+            )}
+
+            {/* Menú de opciones de tarea */}
+            {(canEdit || canDeleteTasks) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-2"
+                  >
+                    <MoreHorizontal size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {canEdit && (
+                    <DropdownMenuItem onClick={() => setShowReports(true)}>
+                      <Settings size={14} className="mr-2" />
+                      Gestionar tarea
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {canDeleteTasks && onTaskDelete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem 
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash2 size={14} className="mr-2" />
+                            Eliminar tarea
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar tarea?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción eliminará permanentemente la tarea "{task.title}". 
+                              Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => onTaskDelete(task.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             
             {task.assigned && (

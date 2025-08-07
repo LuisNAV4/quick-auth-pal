@@ -6,6 +6,7 @@ interface UserPermissions {
   canCreateProjects: boolean;
   canCreateTasks: boolean;
   canManageUsers: boolean;
+  canDeleteTasks: boolean;
   userRole: 'admin' | 'gerente' | 'miembro' | null;
   loading: boolean;
 }
@@ -16,6 +17,7 @@ export const useUserPermissions = (): UserPermissions => {
     canCreateProjects: false,
     canCreateTasks: false,
     canManageUsers: false,
+    canDeleteTasks: false,
     userRole: null,
     loading: true,
   });
@@ -27,6 +29,7 @@ export const useUserPermissions = (): UserPermissions => {
           canCreateProjects: false,
           canCreateTasks: false,
           canManageUsers: false,
+          canDeleteTasks: false,
           userRole: null,
           loading: false,
         });
@@ -52,6 +55,7 @@ export const useUserPermissions = (): UserPermissions => {
           canCreateProjects: userRole === 'admin' || userRole === 'gerente',
           canCreateTasks: userRole === 'admin' || userRole === 'gerente',
           canManageUsers: userRole === 'admin',
+          canDeleteTasks: userRole === 'admin', // Solo administradores pueden eliminar tareas
           userRole,
           loading: false,
         });

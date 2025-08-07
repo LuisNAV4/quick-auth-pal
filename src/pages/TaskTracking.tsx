@@ -218,6 +218,7 @@ const TaskTrackingPage = () => {
         <ProjectGrid 
           tasks={mappedTasks} 
           onProjectSelect={setSelectedProject}
+          proyectos={proyectos}
         />
       </div>
     </AppLayout>

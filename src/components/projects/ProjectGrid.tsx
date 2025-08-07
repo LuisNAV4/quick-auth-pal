@@ -34,9 +34,10 @@ interface Task {
 interface ProjectGridProps {
   tasks: Task[];
   onProjectSelect: (projectName: string) => void;
+  proyectos?: any[];
 }
 
-const ProjectGrid = ({ tasks, onProjectSelect }: ProjectGridProps) => {
+const ProjectGrid = ({ tasks, onProjectSelect, proyectos }: ProjectGridProps) => {
   // Agrupar tareas por proyecto
   const projectsMap = tasks.reduce((acc, task) => {
     if (!acc[task.project]) {
@@ -59,7 +60,9 @@ const ProjectGrid = ({ tasks, onProjectSelect }: ProjectGridProps) => {
 
     const progress = total > 0 ? (completed / total) * 100 : 0;
     const client = projectTasks[0]?.client || "Sin cliente";
-    const budget = projectTasks.reduce((sum, t) => sum + (t.budget || 0), 0);
+    // Calcular presupuesto del proyecto (desde la base de datos)
+    const proyecto = proyectos?.find(p => p.nombre === projectTasks[0]?.project);
+    const budget = proyecto?.presupuesto || 0;
     
     // Próximo vencimiento
     const nextDeadline = projectTasks
@@ -176,8 +179,19 @@ const ProjectGrid = ({ tasks, onProjectSelect }: ProjectGridProps) => {
                   </div>
                 )}
 
+                {/* Presupuesto del proyecto */}
+                {stats.budget > 0 && (
+                  <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <DollarSign size={14} className="text-green-600" />
+                      <p className="text-xs font-medium text-green-800">Presupuesto</p>
+                    </div>
+                    <p className="text-lg font-bold text-green-600">${stats.budget.toLocaleString()}</p>
+                  </div>
+                )}
+
                 {/* Botón de acceso */}
-                <Button 
+                <Button
                   className="w-full group-hover:bg-primary/90 transition-colors"
                   variant="outline"
                 >

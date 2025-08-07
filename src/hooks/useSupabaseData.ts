@@ -90,10 +90,13 @@ const mapearTareaATask = (tarea: Tarea, perfiles: Perfil[] = [], proyectos: Proy
     status: tarea.estado === 'planificacion' ? 'pending' : 
             tarea.estado === 'en_progreso' ? 'in_progress' : 'done',
     project: proyecto?.nombre || tarea.proyecto_id,
+    client: proyecto?.descripcion?.split('\n')[0]?.replace('Cliente: ', '') || '',
     startDate: tarea.fecha_inicio,
     priority: tarea.prioridad === 'low' ? 'low' : 
               tarea.prioridad === 'medium' ? 'medium' : 
               tarea.prioridad === 'high' ? 'high' : 'low',
+    budget: tarea.tiempo_estimado || 0, // Mapear tiempo estimado a budget
+    actualCost: tarea.tiempo_real || 0, // Mapear tiempo real a actualCost
     subTasks: []
   };
 };

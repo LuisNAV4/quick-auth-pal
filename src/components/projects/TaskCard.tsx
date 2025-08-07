@@ -277,16 +277,15 @@ const TaskCard = ({
             )}
             
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              {task.budget && (
+              {/* Mostrar información de tiempo estimado y real en lugar de presupuesto */}
+              <div className="flex gap-4 text-sm">
                 <span className="text-muted-foreground">
-                  Presupuesto: <span className="font-medium text-foreground">${task.budget}</span>
+                  Tiempo est.: <span className="font-medium text-foreground">{task.budget || 0}h</span>
                 </span>
-              )}
-              {task.actualCost && (
                 <span className="text-muted-foreground">
-                  Costo real: <span className="font-medium text-foreground">${task.actualCost}</span>
+                  Tiempo real: <span className="font-medium text-foreground">{task.actualCost || 0}h</span>
                 </span>
-                )}
+              </div>
             </div>
           </div>
         )}

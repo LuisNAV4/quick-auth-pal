@@ -365,13 +365,50 @@ const Chat = () => {
                 </div>
               ))}
 
-              {teamMembers.length === 0 && (
-                <div className="text-center text-muted-foreground py-12">
-                  <div className="p-4 bg-muted/50 rounded-full inline-block mb-4">
-                    <Users size={32} className="opacity-50" />
+              {teamMembers.length === 0 && profile && (
+                <div className="space-y-3">
+                  {/* Mostrar usuario actual cuando no hay API de chat */}
+                  <div className="flex items-start space-x-3 p-3 rounded-xl bg-accent/50">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
+                        <AvatarImage src={profile.avatar_url} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                          {profile.nombre_completo?.[0] || profile.email?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-background rounded-full shadow-sm"></div>
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground truncate">
+                          {profile.nombre_completo || profile.email || 'Usuario Actual'}
+                        </p>
+                        <Crown size={16} className="text-yellow-500 flex-shrink-0" />
+                      </div>
+
+                      {profile.puesto && (
+                        <p className="text-sm text-muted-foreground truncate">{profile.puesto}</p>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs font-medium bg-blue-100 text-blue-800 border-blue-200">
+                          Tú
+                        </Badge>
+                        <span className="text-xs text-green-600 font-medium">En línea</span>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+                    </div>
                   </div>
-                  <p className="text-sm font-medium mb-1">No hay miembros del equipo</p>
-                  <p className="text-xs">Los miembros aparecerán aquí cuando se unan al equipo</p>
+                  
+                  <div className="text-center text-muted-foreground py-8">
+                    <div className="p-4 bg-muted/50 rounded-full inline-block mb-4">
+                      <Users size={32} className="opacity-50" />
+                    </div>
+                    <p className="text-sm font-medium mb-1">Chat no disponible</p>
+                    <p className="text-xs">API de chat no detectada. Los otros miembros aparecerán cuando esté configurada.</p>
+                  </div>
                 </div>
               )}
             </div>
